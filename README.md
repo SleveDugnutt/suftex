@@ -29,3 +29,23 @@ $ python suftex.py \
 -sp PATH_TO_suftex.model \
 --train
 ```
+## options
+when training sentencepiece, you can set ```vocab_size``` and ```character_coverage```.
+```bash
+$ python suftex.py \
+-d PATH_TO_CSV_FILE \
+-col COLUMN_NAME_TO_USE \
+--train_sp
+--vocab_size INTEGER(default : 10000) \
+--character_coverage FLOAT(default : 0.995)
+```
+when traing a model, you can set training epoch and batch size.
+```bash
+$ python suftex.py \
+-d PATH_TO_CSV_FILE \
+-col COLUMN_NAME_TO_USE \
+-sp PATH_TO_suftex.model \
+--train \
+-n EPOCHS(default : 10) \
+-b BATCH_SIZE(default : 32)
+```
