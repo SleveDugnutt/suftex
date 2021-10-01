@@ -36,7 +36,7 @@ $ python suftex.py \
 -col COLUMN_NAME_TO_USE \
 -sp PATH_TO_suftex.model \
 --train \
--cpt PATH_CHECKPOINT_TO_USE
+-cpt PATH_TO_CHECKPOINT_TO_USE
 ```
 ## options
 when training sentencepiece, you can set ```vocab_size``` and ```character_coverage```.
