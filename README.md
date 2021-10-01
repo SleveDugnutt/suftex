@@ -48,7 +48,7 @@ $ python suftex.py \
 --vocab_size INTEGER(default : 10000) \
 --character_coverage FLOAT(default : 0.995)
 ```
-when traing a model, you can set training epoch and batch size.
+when traing a model, you can set the number of training epochs and batch size.
 ```bash
 $ python suftex.py \
 -d PATH_TO_CSV_FILE \
