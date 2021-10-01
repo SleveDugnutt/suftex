@@ -250,6 +250,7 @@ if __name__ == '__main__':
         output_dir = 'checkpoint'
         if args.output_dir:
             output_dir = os.path.join(args.output_dir, output_dir)
+        os.makedirs(output_dir, exist_ok=True)
         train_model(model, train_data, test_data, batch_size, num_epochs,
                     output_dir, train_loss, val_loss, parameter_dict)
     if args.generate:
