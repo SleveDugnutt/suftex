@@ -17,9 +17,6 @@ def calc_max_len(src, sp):
     dst = [tokenizer(s, sp) for s in src]
     return max(len(d) for d in dst)
 
-def encode_tokens(text, sp):
-    return sp.Encode(text)
-
 def add_eos_and_pad(data, max_seq_len, eos, pad, sp):
     output = []
     for d in tqdm(data):
@@ -220,7 +217,6 @@ if __name__ == '__main__':
                 use_scalenorm = True
             ).to(device)
     model = AutoregressiveWrapper(model)
-    lr = args.lr
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     if args.checkpoint:
