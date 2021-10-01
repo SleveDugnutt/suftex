@@ -13,7 +13,7 @@ $ git clone https://github.com/SleveDugnutt/suftex
 $ cd suftex
 ```
 You need a csv file containing a column of texts.\
-First, train sentencepiece on the data.
+First, train [sentencepiece](https://github.com/google/sentencepiece) on the data.
 ```bash
 $ python suftex.py \
 -d PATH_TO_CSV_FILE \
