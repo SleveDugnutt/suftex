@@ -1,5 +1,5 @@
 # suftex
-python code to train a language model to generate texts from end to start words using [performer-pytorch](https://github.com/lucidrains/performer-pytorch)
+python code to train a language model to generate texts from end to start using [performer-pytorch](https://github.com/lucidrains/performer-pytorch)
 # dependencies
 ```bash
 $ pip install tqdm
