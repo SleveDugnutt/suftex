@@ -187,13 +187,13 @@ if __name__ == '__main__':
     path = args.data
     output_dir = args.output_dir
     column = args.column
-    texts = pd.read_csv(path)[column].to_list()
-    data = []
-    for t in texts:
-        reversed_text = ''.join(list(reversed(str(t))))
-        data.append(reversed_text)
     #train sentencepiece
     if args.train_sp:
+        texts = pd.read_csv(path)[column].to_list()
+        data = []
+        for t in texts:
+            reversed_text = ''.join(list(reversed(str(t))))
+            data.append(reversed_text)
         df = pd.DataFrame(data, columns=['text'], dtype=str)
         rev_data = 'suftex_train_file_for_sentencepiece.csv'
         df.to_csv(rev_data, index=False)
@@ -213,6 +213,11 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     if args.train:
+        texts = pd.read_csv(path)[column].to_list()
+        data = []
+        for t in texts:
+            reversed_text = ''.join(list(reversed(str(t))))
+            data.append(reversed_text)
         if args.checkpoint:
             checkpoint = torch.load(args.checkpoint)
             parameter_dict = checkpoint['parameter_dict']
