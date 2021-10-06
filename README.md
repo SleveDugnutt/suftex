@@ -38,6 +38,15 @@ $ python suftex.py \
 --train \
 -cpt PATH_TO_CHECKPOINT_TO_USE
 ```
+to generate a sentence,
+```bash
+$ python suftex.py \
+-sp PATH_TO_suftex.model \
+--generate \
+-cpt PATH_TO_CHECKPOINT_TO_USE \
+-suf "thank you."
+```
+in this case, a sentence ending with "thank you." is generated.
 ## options
 when training sentencepiece, you can set ```vocab_size``` and ```character_coverage```.
 ```bash
