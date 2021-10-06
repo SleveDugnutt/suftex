@@ -53,6 +53,27 @@ def make_dataloader(data, batch_size, shuffle=True):
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
     return data_loader
 
+def build_model(parameter_dict, device):
+    num_tokens = parameter_dict['num_tokens']
+    max_seq_len = parameter_dict['max_seq_len']
+    dim = parameter_dict['dim']
+    depth = parameter_dict['depth']
+    heads = parameter_dict['heads']
+    lr = parameter_dict['lr']
+    model = PerformerLM(
+                num_tokens = num_tokens,
+                max_seq_len = max_seq_len,
+                dim = dim,
+                depth = depth,
+                heads = heads,
+                causal = True,
+                reversible = True,
+                use_scalenorm = True
+            ).to(device)
+    model = AutoregressiveWrapper(model)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    return model, optimizer
+
 def save_model(path, model, optimizer, train_loss, val_loss, parameter_dict):
     torch.save({
         "model_state_dict" : model.state_dict(),
@@ -189,60 +210,34 @@ if __name__ == '__main__':
     sp = spm.SentencePieceProcessor(model_file)
     pad = '<pad>'
     eos = '<eos>'
-    max_seq_len = calc_max_len(data, sp) + 1
-    if args.checkpoint:
-        checkpoint = torch.load(args.checkpoint)
-        parameter_dict = checkpoint['parameter_dict']
-        num_tokens = parameter_dict['num_tokens']
-        dim = parameter_dict['dim']
-        depth = parameter_dict['depth']
-        heads = parameter_dict['heads']
-        lr = parameter_dict['lr']
-    else:  
-        num_tokens = len(sp)
-        dim = args.dim
-        depth = args.depth
-        heads = args.heads
-        lr = args.lr
-    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = PerformerLM(
-                num_tokens = num_tokens,
-                max_seq_len = max_seq_len,
-                dim = dim,
-                depth = depth,
-                heads = heads,
-                causal = True,
-                reversible = True,
-                use_scalenorm = True
-            ).to(device)
-    model = AutoregressiveWrapper(model)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-    if args.checkpoint:
-        checkpoint = torch.load(args.checkpoint)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optim_state_dict'])
-        train_loss = checkpoint['train_loss']
-        val_loss = checkpoint['val_loss']
-    else:
-        train_loss = []
-        val_loss = []
-
-    parameter_dict = {
-        'num_tokens' : num_tokens,
-        'dim' : dim,
-        'depth' : depth,
-        'heads' : heads,
-        'lr' : lr
-    }
-
+    
     if args.train:
+        if args.checkpoint:
+            checkpoint = torch.load(args.checkpoint)
+            parameter_dict = checkpoint['parameter_dict']
+            max_seq_len = parameter_dict['max_seq_len']
+        else:
+            max_seq_len = calc_max_len(data, sp) + 1
+            num_tokens = len(sp)
+            dim = args.dim
+            depth = args.depth
+            heads = args.heads
+            lr = args.lr
+            parameter_dict = {
+                'num_tokens' : num_tokens,
+                'max_seq_len' : max_seq_len,
+                'dim' : dim,
+                'depth' : depth,
+                'heads' : heads,
+                'lr' : lr
+            }
         data = add_eos_and_pad(data, max_seq_len, eos, pad, sp)
+        model, optimizer = build_model(parameter_dict, device)
         test_size = args.test_size
         text_train, text_test = train_test_split(data,
-                                                test_size=test_size,
-                                                random_state=42)
+                                                 test_size=test_size,
+                                                 random_state=42)
         batch_size = args.batch_size
         train_data = make_dataloader(text_train, batch_size, True)
         test_data = make_dataloader(text_test, batch_size, False)
@@ -251,14 +246,30 @@ if __name__ == '__main__':
         if args.output_dir:
             output_dir = os.path.join(args.output_dir, output_dir)
         os.makedirs(output_dir, exist_ok=True)
+        if args.checkpoint:
+            checkpoint = torch.load(args.checkpoint)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optim_state_dict'])
+            train_loss = checkpoint['train_loss']
+            val_loss = checkpoint['val_loss']
+        else:
+            train_loss = []
+            val_loss = []
         train_model(model, train_data, test_data, batch_size, num_epochs,
                     output_dir, train_loss, val_loss, parameter_dict)
     if args.generate:
         if not args.suffix:
             print('give suffix')
             sys.exit()
+        if not args.checkpoint:
+            print('give checkpoint')
+            sys.exit()
+        checkpoint = torch.load(args.checkpoint)
+        parameter_dict = checkpoint['parameter_dict']
+        model, _ = build_model(parameter_dict, device)
         input = args.suffix
         eos_token = sp.Encode(eos)[-1]
         temperature = args.temperatue
+        max_seq_len = parameter_dict['max_seq_len']
         output = generate_text(input, model, eos_token, max_seq_len, temperature)
         print(output)
